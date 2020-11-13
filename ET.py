@@ -45,7 +45,12 @@ def ET(_Rs, _RHmax, _RHmin, _uh, _Tmax, _Tmin, _z, _J, _h, _phi_degree):
     _Ra = (24*60/np.pi) * _Gsc * _dr * (_omega_s * np.sin(_phi) * np.sin(_dell) + np.sin(_omega_s) * np.cos(_phi) * np.cos(_dell))
     _Rso = (0.75 + 2 * 10**-5 * _z) * _Ra
     _Rns = (1 - _albedo) * _Rs
-    _ea = (eT(_Tmin)*(_RHmax/100) + eT(_Tmax)*(_RHmin/100))*0.5
+    if(_RHmin != 0 and _RHmax != 0):
+        _ea = (eT(_Tmin)*(_RHmax/100) + eT(_Tmax)*(_RHmin/100))*0.5
+    else:
+        _ea = eT(_Tmin)
+    if(_RHmax > 0):
+        _ea *=  (_RHmax/100)
     _es = 0.5 * (eT(_Tmax) + eT(_Tmin))
     _Rnl = _sigma * (((_Tmax+273.16)**4 + (_Tmin+273.16)**4)/2) * (0.34 - 0.14 * np.sqrt(_ea)) * (1.35 * (_Rs/_Rso) - 0.35)
     _Rn = _Rns - _Rnl
@@ -63,12 +68,9 @@ def ET(_Rs, _RHmax, _RHmin, _uh, _Tmax, _Tmin, _z, _J, _h, _phi_degree):
 
 #5 Data Processing
 df = pd.read_csv('AWS.csv')                                             # read the csv into a variable  encoding = 'iso-8859-1'
-df_val = df.to_numpy()                                                  # matrix of useful values
+df_val = df.to_numpy()                                                  # convert to numpy values
 
-#6 Required field values
-
-
-#7 Final Calculations
+#6 Final Calculations
 solutions = []
 for i in range(df_val.shape[0]):
     par = df_val[i]
@@ -76,7 +78,7 @@ for i in range(df_val.shape[0]):
 ET_values = np.transpose(np.array(solutions))
 
 
-#8 Plot daily ET values
+#7 Plot daily ET values
 plt.figure(figsize=(19.2, 10.8))
 plt.plot(ET_values[0], label='Penman ET, Long Crop')
 plt.plot(ET_values[1], label='Penman ET, Short Crop')
@@ -84,9 +86,9 @@ plt.plot(ET_values[2], label='Hargreaves ET')
 plt.legend()
 plt.xlabel('Day of the year')
 plt.ylabel('ET')
-plt.savefig('Daily ET Values.png', dpi=400)
+plt.savefig('Daily ET Values.png', dpi=200)
 
-#9 Plot monthly ET values
+#8 Plot monthly ET values
 max_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 avg = [[0, 0, 0] for x in range(12)]
@@ -112,16 +114,16 @@ plt.bar(r3, monthly_ET_values[2], width=bar_width,label='Hargreaves ET Monthly')
 plt.legend()
 plt.xlabel('Month of the year')
 plt.ylabel('ET')
-plt.savefig('Monthly ET Values.png', dpi=400)
+plt.savefig('Monthly ET Values.png', dpi=200)
 
-#10 cumulative monthly ET values from all three methods:
+#9 cumulative monthly ET values from all three methods:
 cum_monthly = monthly_ET_values
 for d in range(1,12):
     cum_monthly[0][d] += cum_monthly[0][d-1]
     cum_monthly[1][d] += cum_monthly[1][d-1]
     cum_monthly[2][d] += cum_monthly[2][d-1]
 
-#11 Plotting cumulative monthly values:
+#10 Plotting cumulative monthly values:
 r1 = np.arange(len(cum_monthly[0]))
 r2 = [x + bar_width for x in r1]
 r3 = [x + bar_width for x in r2]
@@ -132,9 +134,9 @@ plt.bar(r3, cum_monthly[2], width=bar_width,label='Hargreaves ET Monthly Cumulat
 plt.legend()
 plt.xlabel('Month of the year')
 plt.ylabel('ET')
-plt.savefig('Cumulative Monthly ET Values.png', dpi=400)
+plt.savefig('Cumulative Monthly ET Values.png', dpi=200)
 
-#12 Cumulative Daily ET values:
+#11 Cumulative Daily ET values:
 cum_ET =  ET_values
 for i in range(1, 365):
     cum_ET[0][i] += cum_ET[0][i-1]
@@ -149,7 +151,7 @@ plt.plot(cum_ET[2], label='Cumulative Hargreaves ET')
 plt.legend()
 plt.xlabel('Day of the year')
 plt.ylabel('ET')
-plt.savefig('Cumulative Daily ET Values.png', dpi=400)
+plt.savefig('Cumulative Daily ET Values.png', dpi=200)
 
 #14 Generate daily ET Cumulative values
 f = open('Cumulative Daily.txt', 'a')

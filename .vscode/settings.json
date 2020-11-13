@@ -1,5 +1,5 @@
 {
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
-    "python.pythonPath": "/home/sachin/miniconda3/envs/ai/bin/python"
+    "python.pythonPath": "C:\\Python38\\python.exe"
 }
